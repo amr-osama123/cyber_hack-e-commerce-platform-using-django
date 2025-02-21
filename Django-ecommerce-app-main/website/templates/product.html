@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br>
+<ul class="nav nav-tabs">
+    <li class="nav-item ms-auto">
+      <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active" aria-current="page" href="{% url 'cart_summary' %}">Cart</a>
+    </li>
+</ul>
+
+
+
+<div class="card mb-3" style="max-width: 1500px;">
+    <div class="row g-0">
+        <div class="col-md-4">
+            <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="...">
+        </div>
+        <div class="col-md-8">
+            <div class="card-body">
+                {% if product.is_on_sale %}
+                <div class="badge bg-danger text-white position-absolute" style="top: 0.5rem; right: 0.5rem">SALE</div>
+                {% endif %}
+                <h3 class="card-title">{{ product.name }}</h3>
+                <hr>
+                {% if product.is_on_sale %}
+                <p class="card-text">
+                    <strike>
+                        ${{ product.price }}
+                    </strike>
+                    &nbsp;
+                    ${{ product.sale_price }}
+                </p>
+                {% else %}
+                <p class="card-text">${{ product.price }}</p>
+                {% endif %}
+                
+                <p class="card-text">Category: <span class="badge text-bg-secondary">{{ product.category }}</span></p>
+                <br>
+                <br>
+                <div class = "row justify-content">
+                    <div class = "col-md-2">Quantity</div>
+                    <div class = "col-md-2">
+                <select class="form-select" id = "quantity_cart">
+            
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
+                </div>
+                </div>
+<br>
+                <div class="d-grid gap-2">
+                    <button type="button" value = "{{ product.id }}" class="btn btn-success" id = "add_cart">
+                        <i class="bi-cart-fill me-1">
+                        </i>
+                        Add to cart
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card-body">
+
+                <h6 class="card-title">Description: </h6>
+                <p class="card-text">{{ product.description }}</p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  
+
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  
+
+  <script>
+    // Check if button pressed
+    $(document).on('click', '#add_cart', function(e){
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: '{% url "cart_add" %}',
+            data: {
+        product_id: $('#add_cart').val(),
+        product_qty: $('#quantity_cart option:selected').text(),
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        action: 'post'
+            },
+    
+            success: function(json){
+                //console.log(json)
+                document.getElementById("cart_quantity").textContent = json.quantity
+                location.reload();
+            },
+    
+            error: function(xhr, errmsg, err){
+    
+            }
+    
+    
+        });
+    
+    
+    
+    })
+    
+    
+    
+    
+    </script>
+
+{% endblock %}

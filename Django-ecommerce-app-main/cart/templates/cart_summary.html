@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<header class="bg-light py-5">
+    <div class="container px-4 px-lg-5 my-5">
+        <div class="text-center text-black">
+            <h3 class="display-4 fw-bolder">Your cart</h3>
+            <p class="lead fw-normal text-black-50 mb-0">View products in your cart...</p>
+        </div>
+    </div>
+</header>
+<br>
+{% if cart_products %}
+{% for product in cart_products %}
+
+<!-- Product card  -->
+<div class="card mb-3" style="max-width: 1000px;">
+    <div class="row g-0">
+      <div class="col-md-4">
+
+        <!-- Product image  -->
+        <img src="{{ product.image.url }}" class="img-fluid rounded-start" alt="...">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+
+          <!-- Product name  -->
+          <h5 class="card-title">{{ product.name }}</h5>
+
+          <!-- Product category  -->
+          <p class="card-text">Category: <span class="badge text-bg-secondary">{{ product.category }}</span></p>
+
+          <!-- Product price and sale -->
+          {% if product.is_on_sale%}
+          <p class="card-text">Price: <strike>{{ product.price }}</strike> &nbsp; {{ product.sale_price }}</p>
+          {% else %}
+          <p class="card-text">Price: {{ product.price }}</p>
+          {% endif %}
+
+          <!-- Product quantity select  -->
+          <div class = "row justify-content">
+            <div class="col-md-2">Quantity:</div>
+            <div class="col-md-2">
+            <select class="form-select form-select-sm" id="select{{product.id}}">
+              
+        {% for key, value in quantities.items %}
+            {% if key == product.id|slugify %}
+        <option selected>{{ value }}</option>
+            {% endif %}
+        {% endfor %}
+                       
+
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+            </div>
+        </div>
+        <br/><br/>
+    
+    <!-- Home button -->
+    <a href="{% url 'home'%}" class="btn btn-secondary">Home</a>
+
+    <!-- Update button -->
+    <button type="button" data-index="{{product.id}}" class="btn btn-secondary update-cart">Update product quantity</button>
+
+    <!-- Delete button -->
+    <button type="button" data-index="{{product.id}}" class="btn btn-danger delete-product">Delete</button>
+  </div>
+</div>
+</div>
+</div>
+
+
+
+      {% endfor %}
+      <br>
+      <h2>Total: ${{ totals }} </h2>
+      <br><br><br>
+      {% else %}
+      There's Nothing In Your Cart...
+      <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    {% endif %}
+  </div>
+
+
+
+
+<script>
+// Update Cart
+$(document).on('click', '.update-cart', function(e){
+e.preventDefault();
+// grab the product id
+var productid = $(this).data('index');
+
+$.ajax({
+type: 'POST',
+url: '{% url "cart_update" %}',
+data: {
+  product_id: $(this).data('index'),
+  product_qty: $('#select' + productid + ' option:selected').text(),
+  csrfmiddlewaretoken: '{{ csrf_token }}',
+  action: 'post'
+},
+success: function(json){
+    //console.log(json)
+    //document.getElementById("cart_quantity").textContent = json.qty
+    location.reload();
+},
+
+error: function(xhr, errmsg, err){
+
+}
+
+
+});
+
+})
+
+
+
+// Delete product from cart
+
+$(document).on('click', '.delete-product', function(e){
+    e.preventDefault();
+    // grab the product id
+    //var productid = $(this).data('index');
+
+    $.ajax({
+    type: 'POST',
+    url: '{% url "cart_delete" %}',
+    data: {
+      product_id: $(this).data('index'),
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+    },
+    success: function(json){
+        //console.log(json)
+        //document.getElementById("cart_quantity").textContent = json.qty
+        location.reload();
+    },
+
+    error: function(xhr, errmsg, err){
+
+    }
+
+
+    });
+
+})
+</script>
+{% endblock %}
